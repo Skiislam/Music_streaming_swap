@@ -3,7 +3,7 @@ import requests
 import urllib.parse
 import os 
 from datetime import datetime, timedelta
-
+import json
 
 app = Flask(__name__)
 
@@ -17,6 +17,7 @@ AUTH_URL = 'https://accounts.spotify.com/authorize'
 TOKEN_URL = 'https://accounts.spotify.com/api/token'
 API_BASE_URL = 'https://api.spotify.com/v1/'
 
+user_playlists = {}
 
 @app.route('/')
 
@@ -71,26 +72,23 @@ def get_playlists():
     }
     response = requests.get(API_BASE_URL + 'me/playlists', headers = header)
     playlist = response.json()
-    
-    return jsonify(playlist)
+    global user_playlists  # Declare user_playlists as global
+    for item in playlist['items']:
+        user_playlists[item['name']] = item['id']
+    return (redirect('/playlist'))
+@app.route('/playlist')
+def get_userinput():
+    print("Please enter which playlist you would like to convert: ")
+    for names in user_playlists:
+        print(names)
+    return redirect('user_choice')
 
-@app.route('/refresh-token')
-def refresh_token():
-    if 'refresh_token' not in session:
-        return redirect('/login')
-    if datetime.now().timestamp() > session['expires_at']:
-        req_body = {
-            'grant_type' : 'refresh_token',
-            'refresh_token': session['refresh_token'],
-            'client_id': CLIENT_ID,
-            'client_secret' : CLIENT_SECRET
-        }
-        response = request.post(TOKEN_URL, data=req_body)
-        new_token_info = response.json()
+@app.route('/user_choice')
+def display_user_choice():
+    user_input = input
+    if user_input in user_playlists:
+        return print(user_playlists[user_input])
+    return('/user_choice')
 
-        session['access_token'] = new_token_info['access_token']
-        session['expires_at'] = datetime.now().timestamp() + new_token_info['expires_in']
-        return redirect('/playlists')
-    
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', debug = True)
