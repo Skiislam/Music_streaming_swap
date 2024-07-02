@@ -7,7 +7,7 @@ function authorize()
  { let url = AUTH_ENDPOINT;
   url +='?response_type=token';
   url +='&client_id=' + CLIENT_ID;
-  url +='&scope= user-read-email user-read-private'
+  url +='&scope= user-read-email user-read-private playlist-read-private playlist-read-collaborative' 
   url +='&redirect_uri=' + encodeURI(REDIRECT_URI);
   url +='&show_dialog=true';
   window.location.href = url
